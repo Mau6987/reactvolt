@@ -5,26 +5,19 @@ export const getUsuarios = async (req, res) => {
     try {
         const usuarios = await usuario.findAll();
         const formatoUsuarios = usuarios.map((usuario) => {
-            // Se omiten los campos cuando el rol es 'entrenador' o 'tecnico'
-            const usuarioData = {
+            return {
                 id: usuario.id,
                 nombre: usuario.nombre,
-                username: usuario.username,
+                apellido: usuario.apellido,
+                user: usuario.user,
                 correo: usuario.correo,
                 rol: usuario.rol,
-                password: usuario.password,
+                contrasena: usuario.contrasena,
+                altura: usuario.altura,
+                posicion: usuario.posicion,
+                fecha_nacimiento: usuario.fecha_nacimiento
             };
-
-            if (usuario.rol !== 'entrenador' && usuario.rol !== 'tecnico') {
-                // Agregar solo si no es 'entrenador' o 'tecnico'
-                usuarioData.altura = usuario.altura;
-                usuarioData.posicion = usuario.posicion;
-                usuarioData.fecha_nacimiento = usuario.fecha_nacimiento;
-            }
-
-            return usuarioData;
         });
-
         res.status(200).json(formatoUsuarios);
     } catch (error) {
         console.log(error);
@@ -43,18 +36,17 @@ export const getUsuario = async (req, res) => {
         }
 
         const formatoUsuario = {
+            id: unUsuario.id,
             nombre: unUsuario.nombre,
-            username: unUsuario.username,
+            apellido: unUsuario.apellido,
+            user: unUsuario.user,
             correo: unUsuario.correo,
             rol: unUsuario.rol,
-            password: unUsuario.password,
+            contrasena: unUsuario.contrasena,
+            altura: unUsuario.altura,
+            posicion: unUsuario.posicion,
+            fecha_nacimiento: unUsuario.fecha_nacimiento
         };
-
-        if (unUsuario.rol !== 'entrenador' && unUsuario.rol !== 'tecnico') {
-            formatoUsuario.altura = unUsuario.altura;
-            formatoUsuario.posicion = unUsuario.posicion;
-            formatoUsuario.fecha_nacimiento = unUsuario.fecha_nacimiento;
-        }
 
         res.status(200).json(formatoUsuario);
     } catch (error) {
@@ -66,31 +58,35 @@ export const getUsuario = async (req, res) => {
 // Crear un nuevo usuario
 export const createUsuario = async (req, res) => {
     try {
-        const { nombre, username, correo, password, rol, altura, posicion, fecha_nacimiento } = req.body;
+        const { nombre, apellido, user, contrasena, rol, correo, altura, posicion, fecha_nacimiento } = req.body;
 
         if (rol === 'entrenador' || rol === 'tecnico') {
-            // Si el rol es entrenador o tecnico, no pedimos los campos de altura, posicion y fecha_nacimiento
+            // Si el rol es entrenador o tecnico, solo se envían nombre, apellido, user, contrasena y correo
             const nuevoUsuario = await usuario.create({
                 nombre,
-                username,
-                correo,
-                password,
+                apellido,
+                user,
+                contrasena,
                 rol,
+                correo
+            });
+            res.status(201).json(nuevoUsuario);
+        } else if (rol === 'jugador') {
+            // Si el rol es jugador, se envían todos los campos
+            const nuevoUsuario = await usuario.create({
+                nombre,
+                apellido,
+                user,
+                contrasena,
+                rol,
+                correo,
+                altura,
+                posicion,
+                fecha_nacimiento
             });
             res.status(201).json(nuevoUsuario);
         } else {
-            // Si el rol es otro, pedimos los campos completos
-            const nuevoUsuario = await usuario.create({
-                nombre,
-                username,
-                correo,
-                password,
-                rol,
-                altura,
-                posicion,
-                fecha_nacimiento,
-            });
-            res.status(201).json(nuevoUsuario);
+            res.status(400).json({ message: 'Rol no válido' });
         }
     } catch (error) {
         console.log(error);
@@ -102,7 +98,7 @@ export const createUsuario = async (req, res) => {
 export const updateUsuario = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, username, correo, password, rol, altura, posicion, fecha_nacimiento } = req.body;
+        const { nombre, apellido, user, contrasena, rol, correo, altura, posicion, fecha_nacimiento } = req.body;
 
         const usuarioExistente = await usuario.findByPk(id);
 
@@ -111,12 +107,14 @@ export const updateUsuario = async (req, res) => {
         }
 
         usuarioExistente.nombre = nombre;
-        usuarioExistente.username = username;
-        usuarioExistente.correo = correo;
-        usuarioExistente.password = password;
+        usuarioExistente.apellido = apellido;
+        usuarioExistente.user = user;
+        usuarioExistente.contrasena = contrasena;
         usuarioExistente.rol = rol;
+        usuarioExistente.correo = correo;
 
-        if (rol !== 'entrenador' && rol !== 'tecnico') {
+        // Solo se actualizan los campos extras si el rol es jugador
+        if (rol === 'jugador') {
             usuarioExistente.altura = altura;
             usuarioExistente.posicion = posicion;
             usuarioExistente.fecha_nacimiento = fecha_nacimiento;
@@ -138,13 +136,13 @@ export const deleteUsuario = async (req, res) => {
         const usuarioExistente = await usuario.findByPk(id);
 
         if (!usuarioExistente) {
-            return res.status(404).json({ message: "Usuario no encontrado" });
+            return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
         await usuarioExistente.destroy();
-        res.status(200).json({ message: "Usuario eliminado exitosamente" });
+        res.status(200).json({ message: 'Usuario eliminado exitosamente' });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Error al eliminar el usuario" });
+        res.status(500).json({ message: 'Error al eliminar el usuario' });
     }
 };
