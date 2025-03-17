@@ -10,6 +10,7 @@ export const login = async (req, res) => {
         user: user,  // se usa solo el campo user
       },
     });
+    //sddasd
 
     if (!userRecord) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
