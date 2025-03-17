@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import { bd } from "../database/database.js";
-
+//sadasda
 export const usuario = bd.define('usuarios', {
     id: {
         type: DataTypes.INTEGER,
@@ -23,7 +23,7 @@ export const usuario = bd.define('usuarios', {
         type: DataTypes.DATEONLY,
         allowNull: true,
     },
-    user: {  // Cambié 'usuario' por 'user'
+    user: {
         type: DataTypes.STRING(255),
         allowNull: false,
         unique: true,

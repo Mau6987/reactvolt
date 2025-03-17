@@ -1,5 +1,5 @@
 import { usuario } from "../models/usuarios.js";
-
+//ssdsads
 // Obtener todos los usuarios
 export const getUsuarios = async (req, res) => {
     try {
